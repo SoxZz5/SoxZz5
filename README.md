@@ -55,6 +55,7 @@ const soxzz5 = {
 
 ## 🏆 Hackathon Wins
 
+<div align="center">
 <table>
 <tr>
 <td align="center" width="50%">
@@ -83,6 +84,7 @@ Empowering freelancers with blockchain guarantees
 </td>
 </tr>
 </table>
+</div>
 
 <div align="center">
   <img src="https://img.shields.io/badge/🏆_2x_Chainlink_Hackathon_Winner-a855f7?style=for-the-badge" />
@@ -115,7 +117,7 @@ Empowering freelancers with blockchain guarantees
 <tr>
 <td align="center" width="33%">
 <img src="https://img.shields.io/badge/Developer-a855f7?style=for-the-badge" /><br/>
-<a href="https://hypurr.fun"><b>Hypurr Fun</b></a><br/>
+<a href="https://hypurrfun.app"><b>Hypurr Fun</b></a><br/>
 <sub>Meme launchpad on Hyperliquid</sub>
 </td>
 <td align="center" width="33%">
