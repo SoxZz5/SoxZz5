@@ -208,7 +208,7 @@ Empowering freelancers with blockchain guarantees
 ## 🏅 GitHub Trophies
 
 <div align="center">
-<img src="https://github-profile-trophy.vercel.app/?username=soxzz5&theme=algolia&no-frame=true&no-bg=true&column=7&margin-w=5" />
+<img src="https://github-profile-trophy.vercel.app/?username=SoxZz5&theme=algolia&no-frame=true&no-bg=true&column=7&margin-w=5" />
 </div>
 
 ---
@@ -217,9 +217,9 @@ Empowering freelancers with blockchain guarantees
 
 <div align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/soxzz5/soxzz5/output/github-snake-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/soxzz5/soxzz5/output/github-snake.svg" />
-  <img alt="github-snake" src="https://raw.githubusercontent.com/soxzz5/soxzz5/output/github-snake-dark.svg" />
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/SoxZz5/SoxZz5/output/github-snake-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/SoxZz5/SoxZz5/output/github-snake.svg" />
+  <img alt="github-snake" src="https://raw.githubusercontent.com/SoxZz5/SoxZz5/output/github-snake-dark.svg" />
 </picture>
 </div>
 
@@ -237,7 +237,7 @@ Empowering freelancers with blockchain guarantees
 
 <br/>
 
-<img src="https://komarev.com/ghpvc/?username=soxzz5&color=00D9FF&style=flat-square&label=Profile+Views" />
+<img src="https://komarev.com/ghpvc/?username=SoxZz5&color=00D9FF&style=flat-square&label=Profile+Views" />
 
 </div>
 
