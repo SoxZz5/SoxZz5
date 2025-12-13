@@ -208,7 +208,7 @@ Empowering freelancers with blockchain guarantees
 ## 🏅 GitHub Trophies
 
 <div align="center">
-<img src="https://github-profile-trophy.vercel.app/?username=SoxZz5&theme=algolia&no-frame=true&no-bg=true&column=7&margin-w=5" />
+<img src="https://github-profile-trophy.vercel.app/?username=soxzz5&theme=tokyonight&no-frame=true&no-bg=true&column=4&margin-w=15&margin-h=15" />
 </div>
 
 ---
