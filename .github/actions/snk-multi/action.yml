@@ -1,0 +1,25 @@
+name: 'Multi-User Snake Animation'
+description: 'Generate a snake animation from multiple GitHub users contribution graphs merged together'
+author: 'SoxZz5'
+
+inputs:
+  github_user_names:
+    description: 'Comma-separated list of GitHub usernames to merge contributions from'
+    required: true
+  github_tokens:
+    description: 'Comma-separated list of GitHub tokens (one per username, in same order)'
+    required: true
+  outputs:
+    description: 'Output file paths (one per line)'
+    required: false
+    default: |
+      dist/github-snake.svg
+      dist/github-snake-dark.svg?palette=github-dark
+
+runs:
+  using: 'node20'
+  main: 'index.js'
+
+branding:
+  icon: 'activity'
+  color: 'green'
