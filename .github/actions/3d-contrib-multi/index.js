@@ -204,8 +204,8 @@ function generateFullSVG(data, theme) {
   // 3D map area (centered and bigger)
   const mapWidth = 580;
   const mapHeight = 400;
-  const mapX = 20;  // Position more to the left for centering
-  const mapY = 25;
+  const mapX = -30;  // Further left
+  const mapY = 50;   // More to the bottom
 
   // Radar chart area (RIGHT side)
   const statsX = 550;
