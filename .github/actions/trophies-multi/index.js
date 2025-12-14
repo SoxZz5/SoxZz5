@@ -12,7 +12,7 @@ function setFailed(message) {
   process.exit(1);
 }
 
-// Themes matching github-profile-trophy exactly
+// Themes - A ranks are gold/yellow tones (not silver)
 const THEMES = {
   darkhub: {
     background: '#24292e',
@@ -20,10 +20,10 @@ const THEMES = {
     title: '#ffffff',
     text: '#9e9e9e',
     icon: '#3d3d3d',
-    rankS: { bg: '#ffd700', text: '#000' },
-    rankA: { bg: '#c0c0c0', text: '#000' },
-    rankB: { bg: '#cd7f32', text: '#fff' },
-    rankC: { bg: '#555', text: '#fff' },
+    rankS: { bg: '#ffd700', text: '#000' },  // Bright gold
+    rankA: { bg: '#f0c14b', text: '#000' },  // Yellow gold (was silver)
+    rankB: { bg: '#cd7f32', text: '#fff' },  // Bronze
+    rankC: { bg: '#555', text: '#fff' },     // Gray
   },
   onedark: {
     background: '#282c34',
@@ -194,13 +194,13 @@ function renderTrophy(trophy, stats, theme, x, y, size) {
 
   let svg = `<g transform="translate(${x}, ${y})">`;
 
-  // Background with subtle gradient
+  // Background with subtle gradient - A ranks use gold tones
   svg += `
     <defs>
       <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
         <stop offset="0%" stop-color="${rankStyle.bg}"/>
         <stop offset="50%" stop-color="${rankStyle.bg}"/>
-        <stop offset="100%" stop-color="${isS ? '#b8860b' : isA ? '#8a8a8a' : isB ? '#8b4513' : '#333'}"/>
+        <stop offset="100%" stop-color="${isS ? '#b8860b' : isA ? '#c9a227' : isB ? '#8b4513' : '#333'}"/>
       </linearGradient>
       <linearGradient id="${shineId}" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="white" stop-opacity="0.4"/>
@@ -211,8 +211,8 @@ function renderTrophy(trophy, stats, theme, x, y, size) {
       </filter>
     </defs>`;
 
-  // Card background
-  svg += `<rect width="${size}" height="${size}" rx="8" fill="${theme.background}" stroke="${isS ? '#ffd700' : isA ? '#c0c0c0' : theme.border}" stroke-width="${isS || isA ? 2 : 1}"/>`;
+  // Card background - A ranks have gold border
+  svg += `<rect width="${size}" height="${size}" rx="8" fill="${theme.background}" stroke="${isS ? '#ffd700' : isA ? '#f0c14b' : theme.border}" stroke-width="${isS || isA ? 2 : 1}"/>`;
 
   // Decorative corners for S rank
   if (isS) {
@@ -286,10 +286,10 @@ function renderTrophy(trophy, stats, theme, x, y, size) {
     </g>`;
   }
 
-  // Rank badge
+  // Rank badge - properly centered text
   const badgeY = isS ? 70 : isA ? 65 : isB ? 62 : 60;
   svg += `<circle cx="${cx}" cy="${badgeY}" r="12" fill="${rankStyle.bg}"/>`;
-  svg += `<text x="${cx}" y="${badgeY + 4}" fill="${rankStyle.text}" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle">${rank}</text>`;
+  svg += `<text x="${cx}" y="${badgeY}" fill="${rankStyle.text}" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle" dominant-baseline="central">${rank}</text>`;
 
   // Title
   svg += `<text x="${cx}" y="${size - 20}" fill="${theme.title}" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="600" text-anchor="middle">${trophy.title}</text>`;

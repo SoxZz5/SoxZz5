@@ -105,7 +105,8 @@ async function fetchUserData(username, token) {
       langMap.set(name, existing);
     }
   }
-  const languages = Array.from(langMap.values()).sort((a, b) => b.size - a.size).slice(0, 6);
+  // Keep more languages per user for better merging (will be trimmed to 6 after merge)
+  const languages = Array.from(langMap.values()).sort((a, b) => b.size - a.size).slice(0, 15);
 
   // Use both contributionsCollection (yearly) and total counts
   const stats = {
@@ -119,7 +120,12 @@ async function fetchUserData(username, token) {
     totalForks
   };
 
-  console.log(`  ${username}: ${stats.totalContributions} contributions, ${stats.commits} commits`);
+  console.log(`  ${username}:`);
+  console.log(`    📅 Contributions: ${stats.totalContributions}`);
+  console.log(`    💾 Commits: ${stats.commits} (${contrib.totalCommitContributions} public + ${contrib.restrictedContributionsCount} private)`);
+  console.log(`    🔀 PRs: ${stats.pullRequests}, Issues: ${stats.issues}, Reviews: ${stats.reviews}`);
+  console.log(`    📁 Repos: ${stats.repos}, Stars: ${stats.totalStars}, Forks: ${stats.totalForks}`);
+  console.log(`    🔤 Languages (${languages.length}): ${languages.slice(0, 6).map(l => `${l.name}(${l.size})`).join(', ')}${languages.length > 6 ? '...' : ''}`);
   return { contributions, stats, languages };
 }
 
@@ -171,6 +177,12 @@ function mergeUserData(allData) {
   }
   const languages = Array.from(langMap.values()).sort((a, b) => b.size - a.size).slice(0, 6);
 
+  console.log(`\n📊 MERGED TOTALS:`);
+  console.log(`  📅 Total Contributions: ${stats.totalContributions}`);
+  console.log(`  💾 Total Commits: ${stats.commits}`);
+  console.log(`  🔀 Total PRs: ${stats.pullRequests}, Issues: ${stats.issues}, Reviews: ${stats.reviews}`);
+  console.log(`  📁 Total Repos: ${stats.repos}, Stars: ${stats.totalStars}, Forks: ${stats.totalForks}`);
+  console.log(`  🔤 Languages: ${languages.map(l => `${l.name}(${l.size})`).join(', ')}`);
   return { contributions: sorted, stats, languages };
 }
 
@@ -184,14 +196,14 @@ function generateFullSVG(data, theme) {
   const gridColor = '#30363d';
 
   // Language pie chart area (LEFT side)
-  const pieX = 70;
-  const pieY = 140;
+  const pieX = 75;
+  const pieY = 150;
 
-  // 3D map area (CENTER)
-  const mapWidth = 500;
+  // 3D map area (CENTER - properly centered)
+  const mapWidth = 480;
   const mapHeight = 350;
-  const mapX = 170;
-  const mapY = 50;
+  const mapX = (svgWidth - mapWidth) / 2;  // Center the map
+  const mapY = 40;
 
   // Radar chart area (RIGHT side)
   const statsX = 550;
