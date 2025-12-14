@@ -48,6 +48,9 @@ query($login: String!) {
         }
       }
     }
+    pullRequests(first: 1) { totalCount }
+    issues(first: 1) { totalCount }
+    repositoriesContributedTo(first: 1) { totalCount }
   }
 }
 `;
@@ -104,12 +107,13 @@ async function fetchUserData(username, token) {
   }
   const languages = Array.from(langMap.values()).sort((a, b) => b.size - a.size).slice(0, 6);
 
+  // Use both contributionsCollection (yearly) and total counts
   const stats = {
     commits: contrib.totalCommitContributions + contrib.restrictedContributionsCount,
-    issues: contrib.totalIssueContributions,
-    pullRequests: contrib.totalPullRequestContributions,
+    issues: user.issues?.totalCount || contrib.totalIssueContributions,
+    pullRequests: user.pullRequests?.totalCount || contrib.totalPullRequestContributions,
     reviews: contrib.totalPullRequestReviewContributions,
-    repos: contrib.totalRepositoryContributions,
+    repos: user.repositories.totalCount,
     totalContributions: calendar.totalContributions,
     totalStars,
     totalForks
@@ -174,18 +178,22 @@ function generateFullSVG(data, theme) {
   const { contributions, stats, languages } = data;
 
   const svgWidth = 850;
-  const svgHeight = 500;
+  const svgHeight = 520;
   const bg = '#0d1117';
   const textColor = '#8b949e';
   const gridColor = '#30363d';
 
-  // 3D map area
+  // Language pie chart area (LEFT side)
+  const pieX = 70;
+  const pieY = 140;
+
+  // 3D map area (CENTER)
   const mapWidth = 500;
   const mapHeight = 350;
-  const mapX = 30;
+  const mapX = 170;
   const mapY = 50;
 
-  // Stats area
+  // Radar chart area (RIGHT side)
   const statsX = 550;
   const statsY = 50;
 
@@ -317,13 +325,14 @@ function generateFullSVG(data, theme) {
   }
   svg += `  <polygon points="${radarPoints.trim()}" fill="rgba(200, 200, 50, 0.3)" stroke="#c8c832" stroke-width="2"/>\n`;
 
-  // === LANGUAGE PIE CHART ===
-  const pieX = statsX + 50;
-  const pieY = statsY + 270;
-  const pieR = 35;
+  // === LANGUAGE PIE CHART (LEFT SIDE) ===
+  const pieR = 45;
 
   const totalSize = languages.reduce((sum, l) => sum + l.size, 0) || 1;
   let startAngle = -Math.PI / 2;
+
+  // Pie chart label
+  svg += `  <text x="${pieX}" y="${pieY - 60}" fill="#c9d1d9" font-family="Segoe UI,sans-serif" font-size="13" font-weight="600" text-anchor="middle">Languages</text>\n`;
 
   for (const lang of languages) {
     const slice = (lang.size / totalSize) * Math.PI * 2;
@@ -340,23 +349,36 @@ function generateFullSVG(data, theme) {
   }
 
   // Pie hole
-  svg += `  <circle cx="${pieX}" cy="${pieY}" r="${pieR * 0.5}" fill="${bg}"/>\n`;
+  svg += `  <circle cx="${pieX}" cy="${pieY}" r="${pieR * 0.45}" fill="${bg}"/>\n`;
 
-  // Language legend
-  let legendY = statsY + 230;
+  // Language legend (below pie chart)
+  let legendY = pieY + 70;
   for (const lang of languages.slice(0, 6)) {
-    svg += `  <rect x="${pieX + 50}" y="${legendY - 6}" width="10" height="10" fill="${lang.color || '#666'}"/>\n`;
-    svg += `  <text x="${pieX + 65}" y="${legendY}" fill="${textColor}" font-size="10">${lang.name}</text>\n`;
-    legendY += 14;
+    const pct = Math.round((lang.size / totalSize) * 100);
+    svg += `  <rect x="${pieX - 50}" y="${legendY - 8}" width="12" height="12" rx="2" fill="${lang.color || '#666'}"/>\n`;
+    svg += `  <text x="${pieX - 33}" y="${legendY}" fill="#c9d1d9" font-family="Segoe UI,sans-serif" font-size="11">${lang.name}</text>\n`;
+    svg += `  <text x="${pieX + 55}" y="${legendY}" fill="${textColor}" font-family="Segoe UI,sans-serif" font-size="10" text-anchor="end">${pct}%</text>\n`;
+    legendY += 18;
   }
 
-  // === STATS FOOTER ===
-  const footerY = svgHeight - 30;
-  svg += `  <text x="${svgWidth / 2 - 150}" y="${footerY}" fill="#58a6ff" font-family="Segoe UI,sans-serif" font-size="16" font-weight="bold">${stats.totalContributions.toLocaleString()}</text>\n`;
-  svg += `  <text x="${svgWidth / 2 - 65}" y="${footerY}" fill="${textColor}" font-size="12">contributions</text>\n`;
+  // === STATS FOOTER (BIGGER AND BETTER STYLED) ===
+  const footerY = svgHeight - 35;
+  const footerCenterX = mapX + mapWidth / 2;
 
-  svg += `  <text x="${svgWidth / 2 + 50}" y="${footerY}" fill="${textColor}" font-size="14">☆ ${stats.totalStars.toLocaleString()}</text>\n`;
-  svg += `  <text x="${svgWidth / 2 + 130}" y="${footerY}" fill="${textColor}" font-size="14">⑂ ${stats.totalForks.toLocaleString()}</text>\n`;
+  // Background bar for footer
+  svg += `  <rect x="${footerCenterX - 200}" y="${footerY - 25}" width="400" height="45" rx="8" fill="#161b22" stroke="${gridColor}" stroke-width="1"/>\n`;
+
+  // Contributions
+  svg += `  <text x="${footerCenterX - 130}" y="${footerY}" fill="#58a6ff" font-family="Segoe UI,sans-serif" font-size="22" font-weight="bold">${stats.totalContributions.toLocaleString()}</text>\n`;
+  svg += `  <text x="${footerCenterX - 130}" y="${footerY + 15}" fill="${textColor}" font-family="Segoe UI,sans-serif" font-size="11">contributions</text>\n`;
+
+  // Stars
+  svg += `  <text x="${footerCenterX + 20}" y="${footerY}" fill="#f0c14b" font-family="Segoe UI,sans-serif" font-size="20" font-weight="600">★ ${stats.totalStars.toLocaleString()}</text>\n`;
+  svg += `  <text x="${footerCenterX + 20}" y="${footerY + 15}" fill="${textColor}" font-family="Segoe UI,sans-serif" font-size="11">stars</text>\n`;
+
+  // Forks
+  svg += `  <text x="${footerCenterX + 120}" y="${footerY}" fill="#8b949e" font-family="Segoe UI,sans-serif" font-size="20" font-weight="600">⑂ ${stats.totalForks.toLocaleString()}</text>\n`;
+  svg += `  <text x="${footerCenterX + 120}" y="${footerY + 15}" fill="${textColor}" font-family="Segoe UI,sans-serif" font-size="11">forks</text>\n`;
 
   svg += '</svg>';
   return svg;

@@ -179,68 +179,117 @@ function formatValue(value) {
   return value.toString();
 }
 
-// Laurel wreath SVG for S and A ranks
-function laurel(color, side) {
-  const flip = side === 'right' ? 'scale(-1, 1) translate(-50, 0)' : '';
-  return `
-    <g transform="${flip}">
-      <path d="M5,35 Q2,30 5,25 Q8,30 5,35" fill="${color}"/>
-      <path d="M8,30 Q4,25 8,20 Q12,25 8,30" fill="${color}"/>
-      <path d="M11,24 Q7,19 11,14 Q15,19 11,24" fill="${color}"/>
-      <path d="M14,18 Q10,13 14,8 Q18,13 14,18" fill="${color}"/>
-      <path d="M18,12 Q14,7 18,3 Q22,7 18,12" fill="${color}"/>
-    </g>`;
-}
-
+// Professional trophy SVG with different designs per rank level
 function renderTrophy(trophy, stats, theme, x, y, size) {
   const value = stats[trophy.key];
   const rank = getRank(value, trophy.thresholds);
   const rankStyle = getRankStyle(rank, theme);
-  const isHighRank = rank.startsWith('S') || rank.startsWith('A');
-  const laurelColor = rank.startsWith('S') ? '#ffd700' : '#c0c0c0';
+  const isS = rank.startsWith('S');
+  const isA = rank.startsWith('A');
+  const isB = rank === 'B';
+
+  const cx = size / 2;
+  const gradId = `grad_${x}_${y}`;
+  const shineId = `shine_${x}_${y}`;
 
   let svg = `<g transform="translate(${x}, ${y})">`;
 
-  // Background
-  svg += `<rect width="${size}" height="${size}" rx="5" fill="${theme.background}"/>`;
-
-  // Laurels for high ranks
-  if (isHighRank) {
-    svg += `<g transform="translate(${size/2 - 25}, ${size/2 - 15}) scale(0.8)">${laurel(laurelColor, 'left')}</g>`;
-    svg += `<g transform="translate(${size/2 + 25}, ${size/2 - 15}) scale(0.8)">${laurel(laurelColor, 'right')}</g>`;
-  }
-
-  // Trophy cup with gradient
-  const cupGradId = `cup_${x}_${y}`;
+  // Background with subtle gradient
   svg += `
     <defs>
-      <linearGradient id="${cupGradId}" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style="stop-color:${rankStyle.bg};stop-opacity:1" />
-        <stop offset="100%" style="stop-color:${rankStyle.bg};stop-opacity:0.7" />
+      <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="${rankStyle.bg}"/>
+        <stop offset="50%" stop-color="${rankStyle.bg}"/>
+        <stop offset="100%" stop-color="${isS ? '#b8860b' : isA ? '#8a8a8a' : isB ? '#8b4513' : '#333'}"/>
       </linearGradient>
+      <linearGradient id="${shineId}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="white" stop-opacity="0.4"/>
+        <stop offset="50%" stop-color="white" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="shadow_${x}_${y}" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3"/>
+      </filter>
     </defs>`;
 
-  const cx = size / 2;
-  const cy = size / 2 - 8;
+  // Card background
+  svg += `<rect width="${size}" height="${size}" rx="8" fill="${theme.background}" stroke="${isS ? '#ffd700' : isA ? '#c0c0c0' : theme.border}" stroke-width="${isS || isA ? 2 : 1}"/>`;
 
-  // Trophy cup shape
-  svg += `
-    <g transform="translate(${cx - 18}, ${cy - 22})">
-      <!-- Cup body -->
-      <path d="M8,0 L28,0 L26,22 L10,22 Z" fill="url(#${cupGradId})" stroke="${rankStyle.bg}" stroke-width="1"/>
+  // Decorative corners for S rank
+  if (isS) {
+    svg += `<path d="M0,15 L0,8 Q0,0 8,0 L15,0" fill="none" stroke="#ffd700" stroke-width="2"/>`;
+    svg += `<path d="M${size-15},0 L${size-8},0 Q${size},0 ${size},8 L${size},15" fill="none" stroke="#ffd700" stroke-width="2"/>`;
+    svg += `<path d="M${size},${size-15} L${size},${size-8} Q${size},${size} ${size-8},${size} L${size-15},${size}" fill="none" stroke="#ffd700" stroke-width="2"/>`;
+    svg += `<path d="M15,${size} L8,${size} Q0,${size} 0,${size-8} L0,${size-15}" fill="none" stroke="#ffd700" stroke-width="2"/>`;
+  }
+
+  const trophyY = 15;
+
+  if (isS) {
+    // Grand trophy for S ranks - ornate cup with handles and star
+    svg += `<g transform="translate(${cx}, ${trophyY})" filter="url(#shadow_${x}_${y})">
+      <!-- Main cup body -->
+      <path d="M-20,5 L-18,0 L18,0 L20,5 L17,30 L-17,30 Z" fill="url(#${gradId})"/>
       <!-- Cup rim -->
-      <ellipse cx="18" cy="2" rx="12" ry="3" fill="${rankStyle.bg}"/>
-      <!-- Left handle -->
-      <path d="M8,5 Q0,5 0,12 Q0,19 8,19" fill="none" stroke="${rankStyle.bg}" stroke-width="3"/>
-      <!-- Right handle -->
-      <path d="M28,5 Q36,5 36,12 Q36,19 28,19" fill="none" stroke="${rankStyle.bg}" stroke-width="3"/>
+      <ellipse cx="0" cy="2" rx="20" ry="5" fill="url(#${gradId})"/>
+      <ellipse cx="0" cy="2" rx="18" ry="4" fill="url(#${shineId})"/>
+      <!-- Handles -->
+      <path d="M-18,8 C-30,8 -30,25 -17,25" fill="none" stroke="url(#${gradId})" stroke-width="4"/>
+      <path d="M18,8 C30,8 30,25 17,25" fill="none" stroke="url(#${gradId})" stroke-width="4"/>
       <!-- Stem -->
-      <rect x="15" y="22" width="6" height="6" fill="${rankStyle.bg}"/>
+      <rect x="-5" y="30" width="10" height="8" fill="url(#${gradId})"/>
       <!-- Base -->
-      <rect x="10" y="28" width="16" height="4" rx="1" fill="${rankStyle.bg}"/>
-      <!-- Rank letter on cup -->
-      <text x="18" y="16" fill="${rankStyle.text}" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" text-anchor="middle">${rank}</text>
+      <path d="M-18,38 L18,38 L15,45 L-15,45 Z" fill="url(#${gradId})"/>
+      <rect x="-18" y="45" width="36" height="4" rx="1" fill="url(#${gradId})"/>
+      <!-- Star on cup -->
+      <polygon points="0,10 3,18 11,18 5,23 7,31 0,27 -7,31 -5,23 -11,18 -3,18" fill="${rankStyle.text}" transform="scale(0.5) translate(0, 5)"/>
     </g>`;
+  } else if (isA) {
+    // Elegant trophy for A ranks - sleek design
+    svg += `<g transform="translate(${cx}, ${trophyY})" filter="url(#shadow_${x}_${y})">
+      <!-- Cup body -->
+      <path d="M-15,5 L-13,0 L13,0 L15,5 L12,28 L-12,28 Z" fill="url(#${gradId})"/>
+      <!-- Cup rim -->
+      <ellipse cx="0" cy="2" rx="15" ry="4" fill="url(#${gradId})"/>
+      <ellipse cx="0" cy="2" rx="13" ry="3" fill="url(#${shineId})"/>
+      <!-- Handles -->
+      <path d="M-13,7 C-22,7 -22,22 -12,22" fill="none" stroke="url(#${gradId})" stroke-width="3"/>
+      <path d="M13,7 C22,7 22,22 12,22" fill="none" stroke="url(#${gradId})" stroke-width="3"/>
+      <!-- Stem -->
+      <rect x="-4" y="28" width="8" height="7" fill="url(#${gradId})"/>
+      <!-- Base -->
+      <rect x="-14" y="35" width="28" height="3" rx="1" fill="url(#${gradId})"/>
+      <rect x="-12" y="38" width="24" height="5" rx="1" fill="url(#${gradId})"/>
+    </g>`;
+  } else if (isB) {
+    // Simple trophy for B rank - classic cup
+    svg += `<g transform="translate(${cx}, ${trophyY + 3})" filter="url(#shadow_${x}_${y})">
+      <!-- Cup body -->
+      <path d="M-12,3 L-10,0 L10,0 L12,3 L10,25 L-10,25 Z" fill="url(#${gradId})"/>
+      <!-- Cup rim -->
+      <ellipse cx="0" cy="1" rx="12" ry="3" fill="url(#${gradId})"/>
+      <!-- Handles -->
+      <path d="M-10,5 C-18,5 -18,18 -10,18" fill="none" stroke="url(#${gradId})" stroke-width="2.5"/>
+      <path d="M10,5 C18,5 18,18 10,18" fill="none" stroke="url(#${gradId})" stroke-width="2.5"/>
+      <!-- Stem -->
+      <rect x="-3" y="25" width="6" height="6" fill="url(#${gradId})"/>
+      <!-- Base -->
+      <rect x="-10" y="31" width="20" height="4" rx="1" fill="url(#${gradId})"/>
+    </g>`;
+  } else {
+    // Basic medal for C rank
+    svg += `<g transform="translate(${cx}, ${trophyY + 8})" filter="url(#shadow_${x}_${y})">
+      <!-- Ribbon -->
+      <path d="M-8,-5 L-5,15 L0,10 L5,15 L8,-5" fill="${rankStyle.bg}"/>
+      <!-- Medal circle -->
+      <circle cx="0" cy="22" r="16" fill="url(#${gradId})" stroke="${theme.border}" stroke-width="2"/>
+      <circle cx="0" cy="22" r="12" fill="${theme.background}" stroke="${rankStyle.bg}" stroke-width="1"/>
+    </g>`;
+  }
+
+  // Rank badge
+  const badgeY = isS ? 70 : isA ? 65 : isB ? 62 : 60;
+  svg += `<circle cx="${cx}" cy="${badgeY}" r="12" fill="${rankStyle.bg}"/>`;
+  svg += `<text x="${cx}" y="${badgeY + 4}" fill="${rankStyle.text}" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle">${rank}</text>`;
 
   // Title
   svg += `<text x="${cx}" y="${size - 20}" fill="${theme.title}" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="600" text-anchor="middle">${trophy.title}</text>`;
