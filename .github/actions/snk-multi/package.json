@@ -1,7 +1,0 @@
-{
-  "name": "snk-multi",
-  "version": "1.0.0",
-  "description": "Generate snake animation from multiple GitHub users contribution graphs",
-  "main": "index.js",
-  "private": true
-}

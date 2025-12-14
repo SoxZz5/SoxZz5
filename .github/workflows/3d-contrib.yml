@@ -1,4 +1,4 @@
-name: Generate Profile Animations
+name: Generate 3D Contribution Map
 
 on:
   schedule:
@@ -21,8 +21,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Generate Multi-User Snake Animation
-        uses: ./.github/actions/snk-multi
+      - name: Generate Multi-User 3D Contribution Map
+        uses: ./.github/actions/3d-contrib-multi
         with:
           github_user_names: |
             SoxZz5
@@ -32,28 +32,8 @@ jobs:
             ${{ secrets.TOKEN_ACCOUNT1 }}
             ${{ secrets.TOKEN_ACCOUNT2 }}
             ${{ secrets.TOKEN_ACCOUNT3 }}
-          outputs: |
-            dist/github-snake.svg
-            dist/github-snake-dark.svg?palette=github-dark
-
-      - name: Generate Multi-User Trophies
-        uses: ./.github/actions/trophies-multi
-        with:
-          github_user_names: |
-            SoxZz5
-            SoxZz5-Zoop
-            LucasGIFFARD
-          github_tokens: |
-            ${{ secrets.TOKEN_ACCOUNT1 }}
-            ${{ secrets.TOKEN_ACCOUNT2 }}
-            ${{ secrets.TOKEN_ACCOUNT3 }}
-          output: dist/github-trophies.svg
-          theme: darkhub
-          no_frame: 'true'
-          no_bg: 'true'
-          column: '4'
-          margin_w: '15'
-          margin_h: '15'
+          output_dir: dist
+          theme: night-rainbow
 
       - name: Push to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0

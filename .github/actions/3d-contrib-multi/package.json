@@ -1,0 +1,7 @@
+{
+  "name": "3d-contrib-multi",
+  "version": "1.0.0",
+  "description": "Generate 3D contribution map from multiple GitHub users",
+  "main": "index.js",
+  "private": true
+}

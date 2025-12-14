@@ -1,7 +1,0 @@
-{
-  "name": "trophies-multi",
-  "version": "1.0.0",
-  "description": "Generate GitHub profile trophies from multiple users merged",
-  "main": "index.js",
-  "private": true
-}

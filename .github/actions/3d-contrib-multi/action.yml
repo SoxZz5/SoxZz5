@@ -1,0 +1,27 @@
+name: 'Multi-User 3D Contribution Map'
+description: 'Generate 3D contribution visualization from multiple GitHub users merged together'
+author: 'SoxZz5'
+
+inputs:
+  github_user_names:
+    description: 'Newline or comma-separated list of GitHub usernames'
+    required: true
+  github_tokens:
+    description: 'Newline or comma-separated list of GitHub tokens (one per username)'
+    required: true
+  output_dir:
+    description: 'Output directory for SVG files'
+    required: false
+    default: 'profile-3d-contrib'
+  theme:
+    description: 'Theme: night-rainbow, night-green, night-view, green, season'
+    required: false
+    default: 'night-rainbow'
+
+runs:
+  using: 'node20'
+  main: 'index.js'
+
+branding:
+  icon: 'bar-chart-2'
+  color: 'purple'

@@ -208,19 +208,15 @@ Empowering freelancers with blockchain guarantees
 ## 🏅 GitHub Trophies
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/SoxZz5/SoxZz5/output/github-trophies.svg" alt="GitHub Trophies" />
+<img src="https://github-profile-trophy.vercel.app/?username=SoxZz5&theme=darkhub&no-frame=true&no-bg=true&column=4&margin-w=15&margin-h=15" alt="GitHub Trophies" />
 </div>
 
 ---
 
-## 🐍 Contribution Snake
+## 📊 3D Contribution Map
 
 <div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/SoxZz5/SoxZz5/output/github-snake-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/SoxZz5/SoxZz5/output/github-snake.svg" />
-  <img alt="github-snake" src="https://raw.githubusercontent.com/SoxZz5/SoxZz5/output/github-snake-dark.svg" />
-</picture>
+<img src="https://raw.githubusercontent.com/SoxZz5/SoxZz5/output/profile-night-rainbow.svg" alt="3D Contribution Map" />
 </div>
 
 ---
