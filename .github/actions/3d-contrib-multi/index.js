@@ -35,7 +35,7 @@ query($login: String!) {
         }
       }
     }
-    repositories(first: 100, ownerAffiliations: OWNER, orderBy: {field: STARGAZERS, direction: DESC}) {
+    repositories(first: 100, ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER], orderBy: {field: STARGAZERS, direction: DESC}) {
       totalCount
       nodes {
         stargazerCount
@@ -77,6 +77,8 @@ async function fetchUserData(username, token) {
   const user = data.data.user;
   const contrib = user.contributionsCollection;
   const calendar = contrib.contributionCalendar;
+
+  console.log(`  ${username} has ${user.repositories.totalCount} repos (fetched ${user.repositories.nodes.length})`);
 
   // Parse contributions
   const contributions = [];
@@ -199,11 +201,11 @@ function generateFullSVG(data, theme) {
   const pieX = 75;
   const pieY = 150;
 
-  // 3D map area (moved more to the left)
-  const mapWidth = 480;
-  const mapHeight = 350;
-  const mapX = 120;  // Position more to the left
-  const mapY = 40;
+  // 3D map area (centered and bigger)
+  const mapWidth = 550;
+  const mapHeight = 380;
+  const mapX = 80;  // Position more to the left for centering
+  const mapY = 30;
 
   // Radar chart area (RIGHT side)
   const statsX = 550;
@@ -229,9 +231,9 @@ function generateFullSVG(data, theme) {
 `;
 
   // === 3D CONTRIBUTION MAP ===
-  const cellW = 10;
-  const cellD = 10;
-  const maxH = 40;
+  const cellW = 11;
+  const cellD = 11;
+  const maxH = 45;
   const angle = Math.PI / 6;
   const cosA = Math.cos(angle);
   const sinA = Math.sin(angle);
