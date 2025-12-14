@@ -202,10 +202,10 @@ function generateFullSVG(data, theme) {
   const pieY = 150;
 
   // 3D map area (centered and bigger)
-  const mapWidth = 550;
-  const mapHeight = 380;
-  const mapX = 80;  // Position more to the left for centering
-  const mapY = 30;
+  const mapWidth = 580;
+  const mapHeight = 400;
+  const mapX = 20;  // Position more to the left for centering
+  const mapY = 25;
 
   // Radar chart area (RIGHT side)
   const statsX = 550;
@@ -231,9 +231,9 @@ function generateFullSVG(data, theme) {
 `;
 
   // === 3D CONTRIBUTION MAP ===
-  const cellW = 11;
-  const cellD = 11;
-  const maxH = 45;
+  const cellW = 12;
+  const cellD = 12;
+  const maxH = 50;
   const angle = Math.PI / 6;
   const cosA = Math.cos(angle);
   const sinA = Math.sin(angle);

@@ -286,12 +286,7 @@ function renderTrophy(trophy, stats, theme, x, y, size) {
     </g>`;
   }
 
-  // Rank badge - text moved up for better centering
-  const badgeY = isS ? 70 : isA ? 65 : isB ? 62 : 60;
-  svg += `<circle cx="${cx}" cy="${badgeY}" r="12" fill="${rankStyle.bg}"/>`;
-  svg += `<text x="${cx}" y="${badgeY - 3}" fill="${rankStyle.text}" font-family="Segoe UI,Arial,sans-serif" font-size="10" font-weight="bold" text-anchor="middle" dominant-baseline="central">${rank}</text>`;
-
-  // Title
+  // Title (no rank badge - trophy style indicates rank)
   svg += `<text x="${cx}" y="${size - 20}" fill="${theme.title}" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="600" text-anchor="middle">${trophy.title}</text>`;
 
   // Value
