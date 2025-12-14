@@ -105,12 +105,12 @@ Empowering freelancers with blockchain guarantees
 </td>
 <td align="center" width="33%">
 <img src="https://img.shields.io/badge/Blockchain_Dev-a855f7?style=for-the-badge" /><br/>
-<b>Chromia</b><br/>
+<a href="https://chromia.com"><b>Chromia</b></a><br/>
 <sub>Relational blockchain</sub>
 </td>
 <td align="center" width="33%">
 <img src="https://img.shields.io/badge/CTO-00D9FF?style=for-the-badge" /><br/>
-<b>Noobizes</b><br/>
+<a href="https://noobizes.com"><b>Noobizes</b></a><br/>
 <sub>Full technical leadership</sub>
 </td>
 </tr>
