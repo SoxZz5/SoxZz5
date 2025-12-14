@@ -1,12 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-// Simple action helpers (no @actions/core dependency)
+// Simple action helpers
 function getInput(name, required = false) {
   const val = process.env[`INPUT_${name.replace(/ /g, '_').toUpperCase()}`] || '';
-  if (required && !val) {
-    throw new Error(`Input required and not supplied: ${name}`);
-  }
+  if (required && !val) throw new Error(`Input required: ${name}`);
   return val;
 }
 
@@ -36,7 +34,6 @@ query($userName: String!) {
 }
 `;
 
-// Contribution level mapping
 const LEVEL_MAP = {
   'NONE': 0,
   'FIRST_QUARTILE': 1,
@@ -45,7 +42,6 @@ const LEVEL_MAP = {
   'FOURTH_QUARTILE': 4
 };
 
-// Palettes for different themes
 const PALETTES = {
   'github': ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
   'github-dark': ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
@@ -62,15 +58,12 @@ async function fetchContributions(userName, token) {
       'Content-Type': 'application/json',
       'User-Agent': 'snk-multi-action'
     },
-    body: JSON.stringify({
-      query: CONTRIBUTION_QUERY,
-      variables: { userName }
-    })
+    body: JSON.stringify({ query: CONTRIBUTION_QUERY, variables: { userName } })
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Failed to fetch contributions for ${userName}: ${response.status} - ${text}`);
+    throw new Error(`Failed to fetch for ${userName}: ${response.status} - ${text}`);
   }
 
   const data = await response.json();
@@ -86,60 +79,89 @@ async function fetchContributions(userName, token) {
   const weeks = data.data.user.contributionsCollection.contributionCalendar.weeks;
   const cells = [];
 
-  weeks.forEach((week, weekIndex) => {
+  weeks.forEach((week) => {
     week.contributionDays.forEach((day) => {
       cells.push({
-        x: weekIndex,
-        y: day.weekday,
+        date: day.date,
+        weekday: day.weekday,
         count: day.contributionCount,
-        level: LEVEL_MAP[day.contributionLevel] || 0,
-        date: day.date
+        level: LEVEL_MAP[day.contributionLevel] || 0
       });
     });
   });
 
-  const totalContributions = cells.reduce((sum, c) => sum + c.count, 0);
-  console.log(`  Found ${totalContributions} contributions for ${userName}`);
+  const total = cells.reduce((sum, c) => sum + c.count, 0);
+  console.log(`  ${userName}: ${total} contributions (${cells.filter(c => c.count > 0).length} active days)`);
   return cells;
 }
 
 function mergeContributions(allContributions) {
-  console.log('Merging contributions from all users (summing)...');
+  console.log('Merging contributions by date...');
 
-  const merged = new Map();
+  // Merge by DATE, not by position
+  const byDate = new Map();
 
   for (const contributions of allContributions) {
     for (const cell of contributions) {
-      const key = `${cell.x},${cell.y}`;
-      if (merged.has(key)) {
-        const existing = merged.get(key);
+      if (byDate.has(cell.date)) {
+        const existing = byDate.get(cell.date);
         existing.count += cell.count;
-        // Recalculate level based on combined count using GitHub's approximate thresholds
-        if (existing.count === 0) existing.level = 0;
-        else if (existing.count <= 3) existing.level = 1;
-        else if (existing.count <= 6) existing.level = 2;
-        else if (existing.count <= 9) existing.level = 3;
-        else existing.level = 4;
       } else {
-        merged.set(key, { ...cell });
+        byDate.set(cell.date, { ...cell });
       }
     }
   }
 
-  return Array.from(merged.values());
+  // Sort by date and assign positions
+  const sorted = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+  // Group into weeks (7 days each, starting from first date's weekday)
+  const cells = [];
+  let weekIndex = 0;
+  let lastWeekday = -1;
+
+  for (const cell of sorted) {
+    // New week when we go from a higher weekday to a lower one (or first cell)
+    if (cell.weekday <= lastWeekday) {
+      weekIndex++;
+    }
+    lastWeekday = cell.weekday;
+
+    // Recalculate level based on merged count
+    let level = 0;
+    if (cell.count > 0) {
+      if (cell.count <= 2) level = 1;
+      else if (cell.count <= 5) level = 2;
+      else if (cell.count <= 9) level = 3;
+      else level = 4;
+    }
+
+    cells.push({
+      x: weekIndex,
+      y: cell.weekday,
+      date: cell.date,
+      count: cell.count,
+      level
+    });
+  }
+
+  return cells;
 }
 
 function createGrid(cells) {
+  if (cells.length === 0) {
+    return { grid: [[0]], width: 1, height: 1, cells: [] };
+  }
+
   const maxX = Math.max(...cells.map(c => c.x));
   const maxY = Math.max(...cells.map(c => c.y));
-
   const width = maxX + 1;
   const height = maxY + 1;
 
   const grid = Array(height).fill(null).map(() => Array(width).fill(0));
 
   for (const cell of cells) {
-    if (cell.level > 0) {
+    if (cell.level > 0 && cell.y < height && cell.x < width) {
       grid[cell.y][cell.x] = cell.level;
     }
   }
@@ -147,7 +169,6 @@ function createGrid(cells) {
   return { grid, width, height, cells };
 }
 
-// Solve snake path using greedy nearest neighbor
 function solvePath(grid, width, height) {
   const cells = [];
 
@@ -167,7 +188,6 @@ function solvePath(grid, width, height) {
   const visited = new Set();
   let current = { x: 0, y: 0 };
 
-  // Greedy nearest neighbor
   while (cells.length > visited.size) {
     let nearest = null;
     let nearestDist = Infinity;
@@ -185,10 +205,8 @@ function solvePath(grid, width, height) {
 
     if (!nearest) break;
 
-    const key = `${nearest.x},${nearest.y}`;
-    visited.add(key);
+    visited.add(`${nearest.x},${nearest.y}`);
 
-    // Move towards nearest cell step by step
     while (current.x !== nearest.x || current.y !== nearest.y) {
       if (current.x < nearest.x) current.x++;
       else if (current.x > nearest.x) current.x--;
@@ -205,7 +223,6 @@ function solvePath(grid, width, height) {
     }
   }
 
-  // Return to start
   while (current.x !== 0 || current.y !== 0) {
     if (current.x > 0) current.x--;
     else if (current.y > 0) current.y--;
@@ -235,27 +252,22 @@ function generateAnimatedSvg(gridData, snakePath, palette, isDark) {
     cellMap.set(`${cell.x},${cell.y}`, { ...cell });
   }
 
-  // Find when each cell is eaten
   const eatTimes = new Map();
   for (let i = 0; i < snakePath.length; i++) {
-    const step = snakePath[i];
-    if (step.action === 'eat') {
-      eatTimes.set(`${step.x},${step.y}`, i);
+    if (snakePath[i].action === 'eat') {
+      eatTimes.set(`${snakePath[i].x},${snakePath[i].y}`, i);
     }
   }
 
   const frameDuration = 15;
   const totalDuration = snakePath.length * frameDuration;
 
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">
-`;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">\n`;
 
   if (isDark) {
-    svg += `  <rect width="100%" height="100%" fill="${bgColor}"/>
-`;
+    svg += `  <rect width="100%" height="100%" fill="${bgColor}"/>\n`;
   }
 
-  // Draw contribution cells with eat animation
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const cell = cellMap.get(`${x},${y}`);
@@ -270,16 +282,13 @@ function generateAnimatedSvg(gridData, snakePath, palette, isDark) {
         const eatPercent = eatStep / snakePath.length;
         svg += `  <rect x="${px}" y="${py}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${color}">
     <animate attributeName="fill" values="${color};${colors[0]};${colors[0]};${color}" keyTimes="0;${eatPercent.toFixed(4)};0.9999;1" dur="${totalDuration}ms" repeatCount="indefinite"/>
-  </rect>
-`;
+  </rect>\n`;
       } else {
-        svg += `  <rect x="${px}" y="${py}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${color}"/>
-`;
+        svg += `  <rect x="${px}" y="${py}" width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${color}"/>\n`;
       }
     }
   }
 
-  // Snake body segments (drawn back to front)
   for (let seg = snakeLength - 1; seg >= 0; seg--) {
     const segColor = seg === 0 ? snakeHeadColor : snakeBodyColor;
     const opacity = 1 - seg * 0.2;
@@ -297,8 +306,7 @@ function generateAnimatedSvg(gridData, snakePath, palette, isDark) {
     svg += `  <rect width="${cellSize}" height="${cellSize}" rx="2" ry="2" fill="${segColor}" opacity="${opacity}">
     <animate attributeName="x" values="${xValues.join(';')}" dur="${totalDuration}ms" repeatCount="indefinite"/>
     <animate attributeName="y" values="${yValues.join(';')}" dur="${totalDuration}ms" repeatCount="indefinite"/>
-  </rect>
-`;
+  </rect>\n`;
   }
 
   svg += `</svg>`;
@@ -311,51 +319,35 @@ async function run() {
     const tokensInput = getInput('github_tokens', true);
     const outputsRaw = getInput('outputs') || 'dist/github-snake.svg\ndist/github-snake-dark.svg?palette=github-dark';
 
-    // Support both comma-separated and newline-separated formats
-    const userNames = userNamesInput
-      .split(/[,\n]/)
-      .map(u => u.trim())
-      .filter(u => u.length > 0);
+    const userNames = userNamesInput.split(/[,\n]/).map(u => u.trim()).filter(u => u.length > 0);
+    const tokens = tokensInput.split(/[,\n]/).map(t => t.trim()).filter(t => t.length > 0);
 
-    const tokens = tokensInput
-      .split(/[,\n]/)
-      .map(t => t.trim())
-      .filter(t => t.length > 0);
-
-    // Validate that we have matching counts
     if (tokens.length === 1) {
-      // Single token for all users
-      while (tokens.length < userNames.length) {
-        tokens.push(tokens[0]);
-      }
+      while (tokens.length < userNames.length) tokens.push(tokens[0]);
     } else if (tokens.length !== userNames.length) {
-      throw new Error(`Mismatch: ${userNames.length} usernames but ${tokens.length} tokens. Provide one token per user, or a single token for all.`);
+      throw new Error(`Mismatch: ${userNames.length} usernames but ${tokens.length} tokens`);
     }
 
     console.log(`\n🐍 Multi-User Snake Generator`);
     console.log(`   Users: ${userNames.join(', ')}`);
     console.log(`   Tokens: ${tokens.length} provided\n`);
 
-    // Fetch contributions for all users with their respective tokens
     const allContributions = await Promise.all(
-      userNames.map((userName, index) => fetchContributions(userName, tokens[index]))
+      userNames.map((userName, i) => fetchContributions(userName, tokens[i]))
     );
 
-    // Merge contributions
     const mergedCells = mergeContributions(allContributions);
     const totalMerged = mergedCells.reduce((sum, c) => sum + c.count, 0);
-    console.log(`\n📊 Total merged contributions: ${totalMerged}\n`);
+    const activeDays = mergedCells.filter(c => c.count > 0).length;
+    console.log(`\n📊 Merged: ${totalMerged} contributions across ${activeDays} active days\n`);
 
-    // Create grid
     const gridData = createGrid(mergedCells);
-    console.log(`Grid dimensions: ${gridData.width} weeks x ${gridData.height} days`);
+    console.log(`Grid: ${gridData.width} weeks x ${gridData.height} days`);
 
-    // Solve snake path
     console.log('Computing snake path...');
     const snakePath = solvePath(gridData.grid, gridData.width, gridData.height);
-    console.log(`Snake path: ${snakePath.length} steps, ${snakePath.filter(s => s.action === 'eat').length} cells to eat\n`);
+    console.log(`Path: ${snakePath.length} steps, ${snakePath.filter(s => s.action === 'eat').length} cells to eat\n`);
 
-    // Parse outputs and generate files
     const outputs = outputsRaw.split('\n').map(o => o.trim()).filter(o => o.length > 0);
 
     for (const output of outputs) {
@@ -367,9 +359,7 @@ async function run() {
       console.log(`Generating: ${filePath} (${palette})`);
 
       const dir = path.dirname(filePath);
-      if (dir && !fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
+      if (dir && !fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
       const svg = generateAnimatedSvg(gridData, snakePath, palette, isDark);
       fs.writeFileSync(filePath, svg);
